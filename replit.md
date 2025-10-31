@@ -1,117 +1,201 @@
-# CoStory - Real-Time Collaborative Storytelling App
+# CoStory - Real-Time Collaborative Storytelling
 
 ## Overview
+CoStory is a real-time web application where two people create collaborative stories together with AI-powered narration. Each session lasts 10 minutes, with users taking turns writing dialogue and actions while an AI narrator creates an immersive third-person narrative.
 
-CoStory is a real-time collaborative storytelling web application where two users create narratives together with AI-powered narration. Users join via 6-digit room codes, select character genders and story genres, then take turns writing dialogue and actions while an AI narrator (Google Gemini) adapts the story based on their inputs and detected emotions. Each story session lasts 10 minutes, featuring turn-based gameplay with atmospheric ambience descriptions.
+## Current State
+**Status**: ✅ MVP Complete & Tested
+
+The application is fully functional with all core features implemented:
+- 6-digit room code matching system
+- Gender selection (Him/Her/Neutral) for personalized AI narration
+- 6 immersive genre options with unique story hooks
+- Real-time turn-based storytelling via WebSocket
+- AI-powered adaptive narration using Google Gemini
+- 10-minute timer with visual countdown
+- Story export as downloadable .txt file
+
+## Recent Changes (October 31, 2024)
+
+### Initial Build
+- Created complete schema with TypeScript interfaces and Zod validation
+- Implemented beautiful frontend with exceptional visual design following design guidelines
+- Built WebSocket server with real-time room management
+- Integrated Google Gemini AI (gemini-2.5-flash) for adaptive narration
+- Implemented turn-based messaging system
+- Added 10-minute auto-timer with visual warnings
+- Created story download functionality
+- Successfully tested end-to-end with two concurrent users
+
+## Project Architecture
+
+### Frontend Stack
+- **React** with TypeScript
+- **Tailwind CSS** for styling with custom design tokens
+- **WebSocket** for real-time communication
+- **Wouter** for routing
+- **Custom Hooks** for WebSocket state management
+
+### Backend Stack
+- **Express.js** server
+- **WebSocket (ws)** for real-time messaging
+- **Google Gemini AI** (gemini-2.5-flash) for narration
+- **In-memory storage** for room management
+- **Turn-based logic** with automatic timer expiry
+
+### Design System
+- **Primary Font (Story)**: Crimson Pro (serif) - for immersive narrative text
+- **Secondary Font (UI)**: Inter - for clean interface elements
+- **Accent Font (Ambience)**: Space Mono - for atmospheric descriptions
+- **Color Palette**: Custom tokens for AI, user, partner, and ambience messages
+- **Responsive Design**: Mobile-first with breakpoints for tablet and desktop
 
 ## User Preferences
+None documented yet.
 
-Preferred communication style: Simple, everyday language.
+## Core Features
 
-## System Architecture
+### 1. Room Matching System
+- Users enter same 6-digit numeric code to match
+- Must select same genre to join room
+- First user waits, second user activates the story
+- Room capacity: exactly 2 users
 
-### Frontend Architecture
+### 2. Genre Selection (6 Options)
+1. **Truth or Dare (Pub)** - Social ritual in a buzzing pub
+2. **Accidental Encounter (Café)** - Coffee spill meets cute
+3. **Horror Auto Ride** - Late-night mysterious driver
+4. **Back to School** - Time-bending classroom mystery
+5. **Old Friends Reunion** - Locked hall with fake memories
+6. **Midnight Parcel** - Mysterious delivery meeting
 
-**Framework & Build System**
-- React with TypeScript using Vite as the build tool
-- Client-server monorepo structure with shared TypeScript schemas
-- SPA (Single Page Application) with client-side routing handled through component state
+### 3. Turn-Based Storytelling
+- User 1 always starts first
+- Players alternate writing dialogue/actions (max 500 chars)
+- AI narrates in third person after each turn (max 130 chars)
+- Turn indicator shows whose move it is
+- Input disabled when not your turn
 
-**UI Component System**
-- Shadcn/ui component library with Radix UI primitives
-- Tailwind CSS for styling with custom design tokens
-- Three-tier typography system:
-  - Serif fonts (Crimson Pro/Lora) for narrative content
-  - Sans-serif (Inter/DM Sans) for UI elements  
-  - Monospace (Space Mono/JetBrains Mono) for atmospheric text
-- Custom color scheme with story-specific colors for AI, user, partner, and ambience messages
+### 4. AI Narration
+- Uses Google Gemini 2.5 Flash model
+- Analyzes user input for emotional tone
+- Adapts ambience descriptions based on emotion:
+  - Playful → lo-fi beats, chatter
+  - Curious → ticking clocks
+  - Tense → silence, heartbeat
+  - Nostalgic → piano melodies
+  - Romantic → acoustic guitar
+  - Horror → rattling sounds
+- Never speaks as users, only narrates environment and NPCs
+- Advances plot when story stalls
 
-**State Management**
-- React Query (@tanstack/react-query) for server state
-- Local component state for UI interactions
-- Custom WebSocket hook (useWebSocket) for real-time communication
+### 5. Timer System
+- 10 minutes (600 seconds) total
+- Starts when second user joins
+- Visual progress bar at top
+- Red warning when < 2 minutes remaining
+- Auto-ends at 0:00
 
-**Page Flow**
-1. Home: Room code entry → Gender selection → Genre selection
-2. Waiting: Waiting room for second player to join
-3. Story: Active storytelling interface with turn-based input and real-time message feed
+### 6. Story Export
+- Download complete story as .txt file
+- Format includes all messages: You, Partner, AI, Ambience
+- Filename: `costory-{code}-{timestamp}.txt`
 
-### Backend Architecture
+## Technical Implementation
 
-**Runtime & Framework**
-- Node.js with Express.js
-- TypeScript with ESM module system
-- WebSocket server using 'ws' library (not Socket.io despite initial requirements)
+### WebSocket Events
+**Client → Server:**
+- `join_room`: Join/create room with code, gender, genre
+- `send_message`: Send user message (enforces turn validation)
+- `end_story`: Manually end the story
+- `leave_room`: Exit the room
 
-**Session Management**
-- In-memory room management (RoomManager class)
-- No persistent database - rooms exist only during active sessions
-- Session storage using connect-pg-simple (configured but may not be actively used given in-memory approach)
+**Server → Client:**
+- `room_joined`: Confirmation with room info
+- `room_updated`: Real-time updates (messages, timer, turns)
+- `ai_thinking`: Indicator that AI is generating
+- `story_ended`: Story completed (timer or manual)
+- `error`: Validation or system errors
 
-**Real-Time Communication**
-- WebSocket protocol for bidirectional client-server communication
-- Message types: join_room, send_message, room_joined, room_updated, ai_thinking, story_ended, error
-- Room state synchronization between connected users
+### Room States
+1. **Waiting**: First user joined, waiting for partner
+2. **Active**: Both users present, story in progress
+3. **Ended**: Timer expired or manually ended
 
-**Room Lifecycle**
-- Rooms created on first user join with 6-digit code
-- Second user with matching code and genre joins to start 10-minute timer
-- Turn-based message flow: User1 → AI → User2 → AI (continues)
-- Automatic room cleanup on timer expiration or manual story end
+### Message Types
+- **user**: Player dialogue/actions (shown left/right)
+- **ai**: AI narration (centered, italic serif)
+- **ambience**: Atmospheric text (full-width, monospace)
+- **system**: System notifications
 
-**AI Narration System**
-- Google Gemini API (gemini-1.5-flash model) via @google/genai
-- Context-aware prompting with:
-  - Genre and gender information
-  - Recent message history (last 4 messages)
-  - Emotion detection from user inputs
-  - Ambience adaptation based on detected emotions
-- 130-character narration limit
-- Third-person perspective only (never speaks as users)
+## Environment Variables
+- `GEMINI_API_KEY`: Google Gemini API key (required for AI narration)
+- `SESSION_SECRET`: Express session secret
 
-### External Dependencies
+## File Structure
+```
+├── client/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── Home.tsx          # Room code, gender, genre selection
+│   │   │   ├── Waiting.tsx       # Waiting for partner screen
+│   │   │   └── Story.tsx         # Active story interface
+│   │   ├── hooks/
+│   │   │   └── useWebSocket.ts   # WebSocket connection & events
+│   │   ├── App.tsx               # Main app with state routing
+│   │   └── index.css             # Custom design tokens
+│   └── index.html                # Meta tags, fonts
+├── server/
+│   ├── routes.ts                 # WebSocket server & event handlers
+│   ├── roomManager.ts            # Room state & turn management
+│   ├── gemini.ts                 # AI narration integration
+│   └── storage.ts                # Placeholder storage interface
+├── shared/
+│   └── schema.ts                 # TypeScript types & Zod schemas
+├── design_guidelines.md          # Complete UI/UX specifications
+└── replit.md                     # This file
+```
 
-**AI Service**
-- Google Gemini API (gemini-1.5-flash)
-- Purpose: Generate context-aware story narration, detect emotions, adapt ambience
-- Authentication: API key via GEMINI_API_KEY environment variable
+## Development Workflow
+1. **Start Application**: `npm run dev` (already configured)
+2. **Open in Browser**: Visit the Replit webview
+3. **Test with Two Users**: Open app in two different browsers/tabs
+4. **Share Room Code**: Both users enter same 6-digit code
+5. **Select Matching Genre**: Both must choose the same genre
+6. **Begin Storytelling**: Take turns writing and watch AI narrate
 
-**Database**
-- PostgreSQL via @neondatabase/serverless and Drizzle ORM
-- Schema defined but implementation appears minimal - primary storage is in-memory
-- Migration system configured via Drizzle Kit
-- Note: User table schema exists in shared/schema.ts but may not be actively used
+## Known Limitations
+- Rooms stored in memory (cleared on server restart)
+- No persistence of completed stories
+- No user authentication
+- 10-minute limit is fixed (not configurable)
+- Maximum 2 users per room
 
-**WebSocket Communication**
-- 'ws' library for WebSocket server implementation
-- Real-time bidirectional communication for story collaboration
-- Separate connection per user with userId-to-socket mapping
+## Future Enhancements
+- Persistent storage for story history
+- Customizable timer lengths
+- Story gallery showcasing popular stories
+- Background music/sound effects
+- Story branching visualization
+- User profiles and saved stories
+- Extended mode for longer sessions
 
-**UI Component Libraries**
-- Radix UI primitives for accessible component foundations
-- Shadcn/ui configuration with "new-york" style variant
-- Comprehensive component set (dialogs, buttons, forms, etc.)
+## Testing Notes
+✅ Successfully tested with automated E2E tests covering:
+- Room creation and matching
+- Gender and genre selection
+- Turn-based messaging flow
+- AI narration generation
+- Timer countdown and auto-expiry
+- Story download functionality
+- WebSocket connection resilience
 
-**Development Tools**
-- Vite with React plugin and HMR
-- Replit-specific plugins for error overlay and development banner
-- TypeScript with strict mode enabled
+## Deployment
+The application is ready for publishing. Use Replit's built-in deployment to make it live with a public URL.
 
-**Genre System**
-Six predefined story genres with hooks and ambience patterns:
-1. Truth or Dare (Pub) - lo-fi beats, pub atmosphere
-2. Accidental Encounter (Café) - rain, café jazz
-3. Horror Auto Ride - muffled hum, bass rumble
-4. Back to School - bell echo, nostalgic piano
-5. Old Friends Reunion - projector flicker, strings
-6. Midnight Parcel - rain, ticking clock, synth
-
-**Emotion-to-Ambience Mapping**
-AI detects emotions and adapts ambience accordingly:
-- Playful → lo-fi beats, chatter
-- Curious → ticking clocks
-- Tense → silence, heartbeat
-- Nostalgic → piano melodies
-- Romantic → acoustic guitar
-- Horror → rattling sounds
-- Emotional → string instruments
+## Support
+For issues or questions, check:
+1. Ensure `GEMINI_API_KEY` is set in Replit Secrets
+2. Verify both users select the same genre
+3. Check browser console for WebSocket connection errors
+4. Confirm server logs show successful room creation

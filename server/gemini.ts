@@ -51,7 +51,7 @@ Generate the next narration beat that advances the story based on the user's inp
       ],
     });
 
-    const narration = result.response?.text()?.trim() || "The moment hangs in the air...";
+    const narration = result.text?.trim() || "The moment hangs in the air...";
     
     return narration.length > 130 ? narration.substring(0, 127) + "..." : narration;
   } catch (error) {
