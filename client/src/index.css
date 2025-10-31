@@ -80,6 +80,11 @@
   --font-serif: "Crimson Pro", Georgia, serif;
   --font-mono: "Space Mono", "JetBrains Mono", Menlo, monospace;
   --radius: .75rem;
+
+  --story-ai: 262 52% 47%;
+  --story-user: 198 88% 42%;
+  --story-partner: 340 75% 48%;
+  --story-ambience: 240 4% 35%;
   --shadow-2xs: 0px 1px 2px 0px hsl(240 6% 10% / 0.05);
   --shadow-xs: 0px 1px 3px 0px hsl(240 6% 10% / 0.08);
   --shadow-sm: 0px 2px 4px -1px hsl(240 6% 10% / 0.06), 0px 1px 2px -1px hsl(240 6% 10% / 0.08);
@@ -193,6 +198,11 @@
   --chart-3: 340 75% 60%;
   --chart-4: 43 86% 62%;
   --chart-5: 152 69% 52%;
+
+  --story-ai: 262 60% 58%;
+  --story-user: 198 88% 55%;
+  --story-partner: 340 75% 60%;
+  --story-ambience: 240 4% 68%;
 
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.20);
   --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.30);

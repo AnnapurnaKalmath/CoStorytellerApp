@@ -16,6 +16,13 @@ export default {
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
+        // Story-specific colors
+        story: {
+          ai: "hsl(var(--story-ai) / <alpha-value>)",
+          user: "hsl(var(--story-user) / <alpha-value>)",
+          partner: "hsl(var(--story-partner) / <alpha-value>)",
+          ambience: "hsl(var(--story-ambience) / <alpha-value>)",
+        },
         card: {
           DEFAULT: "hsl(var(--card) / <alpha-value>)",
           foreground: "hsl(var(--card-foreground) / <alpha-value>)",
