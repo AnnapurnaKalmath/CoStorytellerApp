@@ -1,0 +1,65 @@
+Build a **real-time co-storytelling web app** using Node.js, Express, Socket.io, and **Google Gemini API** (`gemini-1.5-flash`). Stories last **10 minutes**.
+
+### CORE FLOW:
+1. User opens link → enters **6-digit room code** → selects **gender** (Him/Her/Neutral) → picks **genre** → waits.
+2. Both users: same code + genre → **instant room** with **10-minute countdown**.
+3. **Turn-based**: User 1 writes → AI narrates → User 2 writes → AI adapts → loop.
+4. **Users FULL control**: Dialogue, actions, emotions.
+5. **AI NEVER speaks as users** — narrates in 3rd person:
+   - "He spins the bottle, hand trembling." / "She laughs, eyes sparkling."
+6. **AI analyzes inputs** → detects emotion → **adapts story + ambience text** (no media).
+7. **If stuck**: AI **advances plot** (NPC, event, clue) — never "What happens next?"
+8. **Feed example**:
+   - `You (He): I spill the coffee *awkward*`
+   - `AI: *Jazz fades. Rain patters. She looks up — the boss from last week. Pub chatter hushes.*`
+
+### 6 GENRE HOOKS (Text-Only Ambience):
+1. **Truth or Dare (Pub)**  
+   Hook: "You’re both dragged into a pub ritual: the infamous ‘Truth or Dare Round.’ The bottle spins—stops between you two. Everyone watches."  
+   Ambience: *lo-fi beats, glass clinks, laughter → hush*
+2. **Accidental Encounter (Café)**  
+   Hook: "Morning rush. Coffee spills. Phones drop. One story begins."  
+   Ambience: *light rain, café jazz → soft piano*
+3. **Horror Auto Ride**  
+   Hook: "1:30 AM. Same auto. Driver hums. ‘You’re the seventh pair this month.’"  
+   Ambience: *muffled hum, silence, bass rumble*
+4. **Back to School**  
+   Hook: "You wake in 12th-grade classroom. Exam: ‘Collaboration mandatory.’"  
+   Ambience: *bell echo, chalk, fan hum → nostalgic piano*
+5. **Old Friends Reunion**  
+   Hook: "Reunion hall empty. Doors lock. Photos play — memories that never happened."  
+   Ambience: *projector flicker, thunder → strings*
+6. **Midnight Parcel**  
+   Hook: "Courier delivers half a parcel. Note: ‘Meet at 12:00 AM.’"  
+   Ambience: *rain, ticking clock, synth pulse*
+
+### AI PROMPT (INJECT: gender1, gender2, history, emotion):
+"You are the WORLD + SIDE CHARACTERS. Use 3rd person: User1 ({gender1}), User2 ({gender2}).  
+- Narrate: environment, *tone*, NPC dialogue, **ambience/music as text**  
+- Analyze inputs → detect emotion → adapt story + ambience  
+- Advance plot if slow (NPC, event, clue)  
+- Max 130 chars. End with tension.  
+- Emotion → Ambience:
+   Playful: lo-fi, chatter | Curious: ticking | Tense: silence, heartbeat
+   Nostalgic: piano | Romantic: acoustic | Horror: rattle
+   Emotional: strings  
+History (last 4 lines): {history}"
+
+### TECH:
+- **Socket.io** realtime
+- **In-memory rooms** (by code) + gender, history, start time
+- **10-minute timer** (UI bar) → auto-pause + export TXT
+- **Gemini API** via Replit Secrets (`GEMINI_API_KEY`)
+- **UI**:
+   • Room code input
+   • Gender buttons
+   • Genre picker (text cards)
+   • Waiting screen
+   • Scrollable feed (You, Partner, AI)
+   • Input box + "Send"
+   • Timer bar (top, red at 2 min)
+   • "End & Download" button
+- **Export**: Full story as `.txt` at end
+
+Generate full code: `index.js`, `public/index.html`, `public/script.js`, `public/style.css`
+Deploy live URL.
