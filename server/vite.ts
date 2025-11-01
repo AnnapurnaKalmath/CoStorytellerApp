@@ -67,8 +67,14 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+/**
+ * Serves the compiled static files in a production environment.
+ * The path is corrected to point to the 'dist/public' folder relative to the project root.
+ */
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // CRITICAL FIX: The final compiled path is project-root/dist/public.
+  // We use path.join(process.cwd(), ...) to get the absolute path from the project root.
+  const distPath = path.join(process.cwd(), "dist", "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
@@ -78,7 +84,7 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
+  // fall through to index.html if the file doesn't exist (for client-side routing)
   app.use("*", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
