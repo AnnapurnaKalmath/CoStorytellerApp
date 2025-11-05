@@ -1,3 +1,5 @@
+// --- server/routes.ts (MODIFIED: case "send_message" to handle state) ---
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
@@ -180,22 +182,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
               broadcastRoomUpdate(room, userSockets, roomManager, "ai_thinking"); 
 
               // Get the last two user messages (Bunny then Naina)
-              // NOTE: This relies on the new getLastTwoUserMessages in roomManager.ts
               const lastTwoMessages = roomManager.getLastTwoUserMessages(room.code);
 
               // Construct the history string for the Fusion Narrator
-              // We reverse the order here to ensure the AI reads Bunny's move first, then Naina's
               const fusionHistory = lastTwoMessages
                 .map((msg) => `${msg.sender}: ${msg.content}`)
                 .join("\n");
+                
+              // Append the last known state to the history for the AI
+              const aiHistoryWithState = `${fusionHistory}\nLAST_STATE_JSON: ${room.latest_ai_state}`;
 
-              const narration = await generateNarration({
+              const narrationWithState = await generateNarration({
                 genre: room.genre,
                 gender1: room.users.user1?.gender || "neutral",
                 gender2: room.users.user2?.gender || "neutral",
-                history: fusionHistory, // Contains Bunny's and Naina's input
-                userInput: content, // The latest input (Naina's)
+                history: aiHistoryWithState, // Pass state to AI
+                userInput: content, 
               });
+
+              // 🛑 3. EXTRACT AND UPDATE DYNAMIC STATE 🛑
+              let narration = narrationWithState;
+              const stateMatch = narrationWithState.match(/\*JSON_STATE: (\{.*\})\*/);
+              
+              if (stateMatch && stateMatch[1]) {
+                  const newStateJson = stateMatch[1];
+                  roomManager.updateDynamicState(room.code, newStateJson);
+                  // Remove the JSON string from the narration before saving/broadcasting
+                  narration = narration.replace(stateMatch[0], '').trim();
+              }
+              // ------------------------------------------
 
               // Add the Fusion AI Message
               const aiMessage: StoryMessage = {

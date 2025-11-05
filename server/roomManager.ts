@@ -1,3 +1,5 @@
+// --- server/roomManager.ts (MODIFIED to include new state variables) ---
+
 import { randomUUID } from "crypto";
 import {
   type Room,
@@ -7,6 +9,12 @@ import {
   type Genre,
   type StoryMessage,
 } from "@shared/schema";
+
+// NOTE: Assume Room interface in @shared/schema is updated to include:
+// tension_level: number;
+// sync_score: number;
+// world_reactivity: number;
+// latest_ai_state: string; // To hold the JSON from the AI
 
 export class RoomManager {
   private rooms: Map<string, Room> = new Map();
@@ -31,11 +39,19 @@ export class RoomManager {
         },
         currentTurn: "user1",
         messages: [],
+        
+        // 🛑 NEW STATE INITIALIZATION 🛑
+        tension_level: 2, // Start at 2 as per prompt
+        sync_score: 2,
+        world_reactivity: 1,
+        latest_ai_state: '{"tension_level": 2, "sync_score": 2, "world_reactivity": 1}',
       };
       this.rooms.set(code, room);
       this.userToRoom.set(userId, code);
       return { room, userNumber: "user1", isNewRoom: true };
     }
+
+    // ... (rest of createOrJoinRoom logic remains the same)
 
     if (room.genre !== genre) {
       throw new Error("Genre mismatch");
@@ -78,7 +94,7 @@ export class RoomManager {
     }
   }
 
-  // 🛑 NEW METHOD: Gets the two most recent messages from users only 🛑
+  // Gets the two most recent messages from users only
   getLastTwoUserMessages(code: string): StoryMessage[] {
     const room = this.rooms.get(code);
     if (!room) return [];
@@ -86,6 +102,30 @@ export class RoomManager {
     // Filter out non-user messages and take the last two entries.
     const userMessages = room.messages.filter(msg => msg.type === "user");
     return userMessages.slice(-2);
+  }
+
+  // 🛑 NEW METHOD: Updates the three dynamic state variables 🛑
+  updateDynamicState(code: string, newStateJson: string): void {
+    const room = this.rooms.get(code);
+    if (!room) return;
+
+    try {
+        const newState = JSON.parse(newStateJson);
+        
+        // This relies on the Room interface having these properties!
+        room.tension_level = newState.tension_level || room.tension_level;
+        room.sync_score = newState.sync_score || room.sync_score;
+        room.world_reactivity = newState.world_reactivity || room.world_reactivity;
+        room.latest_ai_state = newStateJson;
+        
+        // Check for ending conditions based on the new state
+        if (room.sync_score > 3 || room.tension_level >= 5) {
+            this.endStory(code);
+        }
+        
+    } catch (e) {
+        console.error("Failed to parse and update dynamic state:", e);
+    }
   }
 
   switchTurn(code: string): void {
@@ -147,6 +187,12 @@ export class RoomManager {
       messages: room.messages,
       startTime: room.startTime,
       timeRemaining,
+      
+      // 🛑 Include dynamic state in RoomInfo 🛑
+      tension_level: room.tension_level,
+      sync_score: room.sync_score,
+      world_reactivity: room.world_reactivity,
+      latest_ai_state: room.latest_ai_state,
     };
   }
 
