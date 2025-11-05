@@ -1,17 +1,12 @@
 import { z } from "zod";
 
-// Gender options for personalized narration
+// Gender options for personalized narration (KEEP)
 export const genderSchema = z.enum(["him", "her", "neutral"]);
 export type Gender = z.infer<typeof genderSchema>;
 
-// Genre types with their story hooks and ambience
+// Genre types: REMOVE all old stories, ADD the new Adaptive Genre
 export const genreSchema = z.enum([
-  "truth_or_dare",
-  "accidental_encounter",
-  "horror_auto",
-  "back_to_school",
-  "old_friends_reunion",
-  "space_mission" // ADDED: New Space Mission Genre
+  "yjhd_temple_incident", // New single genre ID for the adaptive flow
 ]);
 export type Genre = z.infer<typeof genreSchema>;
 
@@ -25,48 +20,18 @@ export interface GenreMetadata {
 
 export const GENRES: GenreMetadata[] = [
   {
-    id: "truth_or_dare",
-    name: "Truth or Dare (Pub)",
-    hook: "You're both dragged into a pub ritual: the infamous 'Truth or Dare Round.' The bottle spins—stops between you two. Everyone watches.",
-    ambience: "lo-fi beats, glass clinks, laughter → hush"
-  },
-  {
-    id: "accidental_encounter",
-    name: "Accidental Encounter (Café)",
-    hook: "Morning rush. Coffee spills. Phones drop. One story begins.",
-    ambience: "light rain, café jazz → soft piano"
-  },
-  {
-    id: "horror_auto",
-    name: "Horror Auto Ride",
-    hook: "1:30 AM. Same auto. Driver hums. 'You're the seventh pair this month.'",
-    ambience: "muffled hum, silence, bass rumble"
-  },
-  {
-    id: "back_to_school",
-    name: "Back to School",
-    hook: "You wake in 12th-grade classroom. Exam: 'Collaboration mandatory.'",
-    ambience: "bell echo, chalk, fan hum → nostalgic piano"
-  },
-  {
-    id: "old_friends_reunion",
-    name: "Old Friends Reunion",
-    hook: "Reunion hall empty. Doors lock. Photos play — memories that never happened.",
-    ambience: "projector flicker, thunder → strings"
-  },
-  {
-    id: "space_mission", // NEW GENRE
-    name: "Space Mission (Co-Pilot)",
-    hook: "Cockpit lights flicker red. The black hole looms. Fuel: 42%. Command wants the data. No rescue.",
-    ambience: "emergency sirens, radio static, deep silence"
+    id: "yjhd_temple_incident",
+    name: "YJHD: The Temple Incident (Adaptive)",
+    hook: "Dusty sunlight hits the jeep windshield. Five bikers block the road, their engines growling louder than Avi’s stomach.",
+    ambience: "engine growl, distant bells, tension"
   }
 ];
 
-// Message types in the story feed
+// Message types in the story feed (KEEP)
 export const messageTypeSchema = z.enum(["user", "ai", "ambience", "system"]);
 export type MessageType = z.infer<typeof messageTypeSchema>;
 
-// Individual story message
+// Individual story message (KEEP)
 export interface StoryMessage {
   id: string;
   type: MessageType;
@@ -75,11 +40,11 @@ export interface StoryMessage {
   timestamp: number;
 }
 
-// Room state
+// Room state (KEEP)
 export const roomStateSchema = z.enum(["waiting", "active", "ended"]);
 export type RoomState = z.infer<typeof roomStateSchema>;
 
-// Room data structure
+// Room data structure (KEEP - no scene/beat trackers)
 export interface Room {
   code: string;
   genre: Genre;
@@ -100,7 +65,7 @@ export interface Room {
   endTime?: number;
 }
 
-// WebSocket message schemas
+// WebSocket message schemas (KEEP)
 export const joinRoomSchema = z.object({
   code: z.string().length(6).regex(/^\d{6}$/),
   gender: genderSchema,
@@ -118,7 +83,7 @@ export const endStorySchema = z.object({
 });
 export type EndStoryMessage = z.infer<typeof endStorySchema>;
 
-// Client-side room info
+// Client-side room info (KEEP - no scene/beat trackers)
 export interface RoomInfo {
   code: string;
   genre: Genre;

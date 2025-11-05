@@ -78,6 +78,16 @@ export class RoomManager {
     }
   }
 
+  // 🛑 NEW METHOD: Gets the two most recent messages from users only 🛑
+  getLastTwoUserMessages(code: string): StoryMessage[] {
+    const room = this.rooms.get(code);
+    if (!room) return [];
+    
+    // Filter out non-user messages and take the last two entries.
+    const userMessages = room.messages.filter(msg => msg.type === "user");
+    return userMessages.slice(-2);
+  }
+
   switchTurn(code: string): void {
     const room = this.rooms.get(code);
     if (room) {
